@@ -81,12 +81,23 @@ MAX25405_Status MAX25405_Deinit(MAX25405_Device* dev) {
 }
 
 MAX25405_Status MAX25405_Reset(MAX25405_Device* dev) {
+	MAX25405_Status status;
+
 	uint8_t mainCfg2Value =
 		MAX25405_SET_FIELD(MAX25405_MAIN_CFG2_OSEN_FIELD, dev->enableOneShotMode) |
 		MAX25405_SET_FIELD(MAX25405_MAIN_CFG2_SHDN_FIELD, dev->enableShutdownMode) |
 		MAX25405_SET_FIELD(MAX25405_MAIN_CFG2_RESET_FIELD, 1);
 
-	return MAX25405_WriteRegisters(dev, MAX25405_REG_MAIN_CFG_2, &mainCfg2Value, sizeof(mainCfg2Value));
+	status = MAX25405_WriteRegisters(dev, MAX25405_REG_MAIN_CFG_2, &mainCfg2Value, sizeof(mainCfg2Value));
+	if (status) {
+		return status;
+	}
+
+	// set default values to "cache":
+	dev->enableOneShotMode = 0;
+	dev->enableShutdownMode = 0;
+
+	return MAX25405_Status_Ok;
 }
 
 MAX25405_Status MAX25405_ForceSync(MAX25405_Device* dev) {
@@ -122,8 +133,8 @@ MAX25405_Status MAX25405_GetPendingInterrupts(MAX25405_Device* dev, MAX25405_Int
 }
 
 MAX25405_Status MAX25405_GetDefaultConfiguration(MAX25405_Configuration* config) {
-	config->modeOfOperation = MAX25405_ModeOfOperation_GestureMode;
-	config->enableEndOfConversionInterrupt = 1;
+	config->modeOfOperation = MAX25405_ModeOfOperation_SuperProximityMode;
+	config->enableEndOfConversionInterrupt = 0;
 	config->externalSyncMode = MAX25405_ExternalSync_NoFunction;
 	config->enableShutdownMode = 0;
 	config->enableOneShotMode = 0;
