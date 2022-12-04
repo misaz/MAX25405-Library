@@ -129,14 +129,28 @@ MAX25405_Status MAX25405_PlatformSpecific_SPI_Init(MAX25405_Device* dev) {
     pins.clock = true;
     pins.miso = true;
     pins.mosi = true;
-    pins.ss0 = true;
-    pins.vddioh = true;
+    pins.ss0 = false;
     pins.ss1 = false;
     pins.ss2 = false;
     pins.sdio2 = false;
     pins.sdio3 = false;
+    pins.vddioh = true;
 
     status = MXC_SPI_Init(MAX25405_SPI, 1, 0, MAX25405_SPI_MAX_SLAVES_COUNT, 0, MAX25405_SPI_SPEED, pins);
+    if (status) {
+        return MAX25405_Status_BusError;
+    }
+
+    mxc_gpio_cfg_t ssCfg;
+    ssCfg.port = MAX25405_SS_GPIO;
+    ssCfg.mask = MAX25405_SS_GPIO_PIN;
+    ssCfg.func = MXC_GPIO_FUNC_OUT;
+    ssCfg.pad = MXC_GPIO_PAD_NONE;
+    ssCfg.vssel = MXC_GPIO_VSSEL_VDDIOH;
+
+    MXC_GPIO_OutSet(MAX25405_SS_GPIO, MAX25405_SS_GPIO_PIN);
+
+    status = MXC_GPIO_Config(&ssCfg);
     if (status) {
         return MAX25405_Status_BusError;
     }
@@ -148,6 +162,18 @@ MAX25405_Status MAX25405_PlatformSpecific_SPI_Deinit(MAX25405_Device* dev) {
     int status;
 
     status = MXC_SPI_Shutdown(MAX25405_SPI);
+    if (status) {
+        return MAX25405_Status_BusError;
+    }
+
+    mxc_gpio_cfg_t ssCfg;
+    ssCfg.port = MAX25405_SS_GPIO;
+    ssCfg.mask = MAX25405_SS_GPIO_PIN;
+    ssCfg.func = MXC_GPIO_FUNC_IN;
+    ssCfg.pad = MXC_GPIO_PAD_NONE;
+    ssCfg.vssel = MXC_GPIO_VSSEL_VDDIO;
+
+    status = MXC_GPIO_Config(&ssCfg);
     if (status) {
         return MAX25405_Status_BusError;
     }
@@ -180,21 +206,40 @@ MAX25405_Status MAX25405_PlatformSpecific_SPI_Write(MAX25405_Device* dev, uint8_
     wrBuffer[1] = 0x00; // write
     memcpy(wrBuffer + 2, buffer, bufferSize);
 
+    transaction.completeCB = MAX25405_PlatformSpecific_SPI_Callback;
     transaction.spi = MAX25405_SPI;
+    transaction.ssDeassert = 0;
+    transaction.txData = wrBuffer;
+    transaction.txLen = 1;
+    transaction.rxData = NULL;
+    transaction.rxLen = 0;
+    transaction.ssIdx = 0;
+    transaction.txCnt = 0;
+    transaction.rxCnt = 0;
+
+    // dummy transfer with CS high because MAX78000 first transfer contains glitches.
+    MXC_SPI_MasterTransaction(&transaction);
+    if (status) {
+        return MAX25405_Status_BusError;
+    }
+
+    transaction.ssDeassert = 1;
     transaction.txData = wrBuffer;
     transaction.txLen = bufferSize + 2;
     transaction.rxData = NULL;
     transaction.rxLen = 0;
     transaction.ssIdx = 0;
-    transaction.ssDeassert = 1;
     transaction.txCnt = 0;
     transaction.rxCnt = 0;
-    transaction.completeCB = MAX25405_PlatformSpecific_SPI_Callback;
+
+    MXC_GPIO_OutClr(MAX25405_SS_GPIO, MAX25405_SS_GPIO_PIN);
 
     status = MXC_SPI_MasterTransaction(&transaction);
     if (status) {
         return MAX25405_Status_BusError;
     }
+
+    MXC_GPIO_OutSet(MAX25405_SS_GPIO, MAX25405_SS_GPIO_PIN);
 
     return MAX25405_Status_Ok;
 }
@@ -205,7 +250,7 @@ MAX25405_Status MAX25405_PlatformSpecific_SPI_Read(MAX25405_Device* dev, uint8_t
 
     // maixmum size is 1 byte (reg. address) + 1 byte (command r/w)
     uint8_t wrBuffer[2];
-    
+
     status = MXC_SPI_SetDataSize(MAX25405_SPI, 8);
     if (status) {
         return MAX25405_Status_BusError;
@@ -224,12 +269,28 @@ MAX25405_Status MAX25405_PlatformSpecific_SPI_Read(MAX25405_Device* dev, uint8_t
     transaction.completeCB = MAX25405_PlatformSpecific_SPI_Callback;
 
     transaction.txData = wrBuffer;
+    transaction.txLen = 1;
+    transaction.rxData = NULL;
+    transaction.rxLen = 0;
+    transaction.ssDeassert = 0;
+    transaction.txCnt = 0;
+    transaction.rxCnt = 0;
+
+    // dummy transfer with CS high because MAX78000 first transfer contains glitches.
+    MXC_SPI_MasterTransaction(&transaction);
+    if (status) {
+        return MAX25405_Status_BusError;
+    }
+
+    transaction.txData = wrBuffer;
     transaction.txLen = sizeof(wrBuffer);
     transaction.rxData = NULL;
     transaction.rxLen = 0;
     transaction.ssDeassert = 0;
     transaction.txCnt = 0;
     transaction.rxCnt = 0;
+
+    MXC_GPIO_OutClr(MAX25405_SS_GPIO, MAX25405_SS_GPIO_PIN);
 
     MXC_SPI_MasterTransaction(&transaction);
     if (status) {
@@ -248,6 +309,8 @@ MAX25405_Status MAX25405_PlatformSpecific_SPI_Read(MAX25405_Device* dev, uint8_t
     if (status) {
         return MAX25405_Status_BusError;
     }
+
+    MXC_GPIO_OutSet(MAX25405_SS_GPIO, MAX25405_SS_GPIO_PIN);
 
     return MAX25405_Status_Ok;
 }

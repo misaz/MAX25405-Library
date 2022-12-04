@@ -13,9 +13,12 @@
 #define MAX25405_USE_I2C
 
 #ifdef MAX25405_USE_SPI
-    #define MAX25405_SPI                    MXC_SPI1
-    #define MAX25405_SPI_SPEED              6000000
-    #define MAX25405_SPI_MAX_SLAVES_COUNT   2
+    #define MAX25405_SPI                    MXC_SPI0
+    #define MAX25405_SPI_SPEED              1000000
+    #define MAX25405_SPI_MAX_SLAVES_COUNT   1
+
+	#define MAX25405_SS_GPIO				MXC_GPIO0
+	#define MAX25405_SS_GPIO_PIN			MXC_GPIO_PIN_9
 #endif
 
 #ifdef MAX25405_USE_I2C
