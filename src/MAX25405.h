@@ -321,33 +321,45 @@ typedef enum {
 } MAX25405_ExternalLedPolarity;
 
 typedef struct {
-	MAX25405_ModeOfOperation modeOfOperation;
-	MAX25405_ExternalSync externalSyncMode;
-	uint8_t enableEndOfConversionInterrupt;
-	uint8_t enableShutdownMode;
-	uint8_t enableOneShotMode;
-	uint8_t enableCoarseAmbientLightCompensation;
-	uint8_t enableDriveCurrentOutput;
-	uint8_t enableDrivePwmOutput;
-	MAX25405_AfePgaGain afePgaGain;
-	MAX25405_AfePolarizationMode afePolarization;
-	MAX25405_AfeCapacitance afeCapacitance;
-	MAX25405_AfeAlcIsel afeAlcIsel;
-	MAX25405_AfeReturnToZero afeReturnToZero;
-	MAX25405_LedDrive ledDrive;
-	MAX25405_ColumnGainModeSelection columnGainMode;
-	MAX25405_ColumnGain columnGain[MAX25405_COLUMNS];
-	MAX25405_ExternalLedPolarity externalLedPolarity;
-} MAX25405_Configuration;
+	struct {
+		MAX25405_ModeOfOperation modeOfOperation;
+		MAX25405_ExternalSync externalSyncMode;
+		uint8_t enableEndOfConversionInterrupt;
+		uint8_t enableShutdownMode;
+		uint8_t enableOneShotMode;
+	} mainConfig;
 
-typedef struct {
-	MAX25405_EndOfConversionDelay endOfConversionDelay;
-	MAX25405_IntegrationTime integrationTime;
-	MAX25405_NumberOfRepeats numberOfRepeats;
-	MAX25405_NumberOfCoherentDoubleSamples numberOfCoherentDoubleSamples;
-	MAX25405_CoherentDoubleSamplingMode coherentDoubleSamplingMode;
-	MAX25405_CapFlipping capFlipping;
-} MAX25405_SequencingConfiguration;
+	struct {
+		MAX25405_EndOfConversionDelay endOfConversionDelay;
+		MAX25405_IntegrationTime integrationTime;
+		MAX25405_NumberOfRepeats numberOfRepeats;
+		MAX25405_NumberOfCoherentDoubleSamples numberOfCoherentDoubleSamples;
+		MAX25405_CoherentDoubleSamplingMode coherentDoubleSamplingMode;
+		MAX25405_CapFlipping capFlipping;
+	} sequencingConfig;
+
+	struct {
+		uint8_t enableCoarseAmbientLightCompensation;
+		MAX25405_AfeAlcIsel afeAlcIsel;
+		MAX25405_AfePgaGain afePgaGain;
+		MAX25405_ExternalLedPolarity externalLedPolarity;
+		MAX25405_AfePolarizationMode afePolarization;
+		MAX25405_AfeCapacitance afeCapacitance;
+		MAX25405_AfeReturnToZero afeReturnToZero;
+	} afeConfig;
+
+	struct {
+		MAX25405_LedDrive ledDrive;
+		uint8_t enableDriveCurrentOutput;
+		uint8_t enableDrivePwmOutput;
+	} ledConfig;
+
+	struct {
+		MAX25405_ColumnGainModeSelection columnGainMode;
+		MAX25405_ColumnGain columnGain[MAX25405_COLUMNS];
+	} columnGainConfig;
+
+} MAX25405_Configuration;
 
 MAX25405_Status MAX25405_InitI2C(MAX25405_Device* dev, MAX25405_I2CAddress address);
 MAX25405_Status MAX25405_InitSPI(MAX25405_Device* dev, uint8_t chipSelectPortNumber);
@@ -362,10 +374,6 @@ MAX25405_Status MAX25405_GetPendingInterrupts(MAX25405_Device* dev, MAX25405_Int
 MAX25405_Status MAX25405_GetDefaultConfiguration(MAX25405_Configuration* config);
 MAX25405_Status MAX25405_GetConfiguration(MAX25405_Device* dev, MAX25405_Configuration* config);
 MAX25405_Status MAX25405_SetConfiguration(MAX25405_Device* dev, MAX25405_Configuration* config);
-
-MAX25405_Status MAX25405_GetDefaultSequencingConfiguration(MAX25405_SequencingConfiguration* config);
-MAX25405_Status MAX25405_GetSequencingConfiguration(MAX25405_Device* dev, MAX25405_SequencingConfiguration* config);
-MAX25405_Status MAX25405_SetSequencingConfiguration(MAX25405_Device* dev, MAX25405_SequencingConfiguration* config);
 
 MAX25405_Status MAX25405_GetSinglePixelData(MAX25405_Device* dev, int16_t* value, int column, int row);
 MAX25405_Status MAX25405_GetPixelsData(MAX25405_Device* dev, int16_t* values, int column, int row, int pixelsCount);
