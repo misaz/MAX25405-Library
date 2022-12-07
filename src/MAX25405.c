@@ -250,7 +250,7 @@ MAX25405_Status MAX25405_SetConfiguration(MAX25405_Device* dev, MAX25405_Configu
 	for (int i = 0; i < (MAX25405_COLUMNS >> 1); i++) {
 		colGainRegs[i] =
 			MAX25405_SET_FIELD(MAX25405_COL_GAIN_CFG_CGAIN1_FIELD, config->columnGain[i * 2]) |
-			MAX25405_SET_FIELD(MAX25405_COL_GAIN_CFG_CGAIN1_FIELD, config->columnGain[i * 2 + 1]);
+			MAX25405_SET_FIELD(MAX25405_COL_GAIN_CFG_CGAIN2_FIELD, config->columnGain[i * 2 + 1]);
 	}
 
 	status = MAX25405_WriteRegisters(dev, MAX25405_REG_COL_GAIN_1_2, colGainRegs, sizeof(colGainRegs));
