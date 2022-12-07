@@ -142,8 +142,8 @@ typedef struct {
 
 	// following variables contains cached actual configuration informations 
 	// which reduces need to read registers when triggering actions.
-	int enableShutdownMode;
-	int enableOneShotMode;
+	uint8_t enableShutdownMode;
+	uint8_t enableOneShotMode;
 } MAX25405_Device;
 
 typedef enum {
@@ -323,12 +323,12 @@ typedef enum {
 typedef struct {
 	MAX25405_ModeOfOperation modeOfOperation;
 	MAX25405_ExternalSync externalSyncMode;
-	int enableEndOfConversionInterrupt;
-	int enableShutdownMode;
-	int enableOneShotMode;
-	int enableCoarseAmbientLightCompensation;
-	int enableDriveCurrentOutput;
-	int enableDrivePwmOutput;
+	uint8_t enableEndOfConversionInterrupt;
+	uint8_t enableShutdownMode;
+	uint8_t enableOneShotMode;
+	uint8_t enableCoarseAmbientLightCompensation;
+	uint8_t enableDriveCurrentOutput;
+	uint8_t enableDrivePwmOutput;
 	MAX25405_AfePgaGain afePgaGain;
 	MAX25405_AfePolarizationMode afePolarization;
 	MAX25405_AfeCapacitance afeCapacitance;
