@@ -158,9 +158,9 @@ MAX25405_Status MAX25405_GetDefaultConfiguration(MAX25405_Configuration* config)
 	config->ledConfig.enableDrivePwmOutput = 0;
 	config->ledConfig.externalLedPolarity = MAX25405_ExternalLedPolarity_DriveNMOS;
 
-	config->columnGainConfig.columnGainMode = MAX25405_ColumnGainModeSelection_Configuration;
+	config->ledConfig.columnGainMode = MAX25405_ColumnGainModeSelection_Configuration;
 	for (int i = 0; i < MAX25405_COLUMNS; i++) {
-		config->columnGainConfig.columnGain[i] = MAX25405_ColumnGain_1_00;
+		config->columnGain[i] = MAX25405_ColumnGain_1_00;
 	}
 
 	return MAX25405_Status_Ok;
@@ -214,11 +214,11 @@ MAX25405_Status MAX25405_GetConfiguration(MAX25405_Device* dev, MAX25405_Configu
 	config->ledConfig.enableDriveCurrentOutput = MAX25405_GET_FIELD(MAX25405_LED_CTRL_DRV_EN_FIELD, ledCtrlReg);
 	config->ledConfig.enableDrivePwmOutput = MAX25405_GET_FIELD(MAX25405_LED_CTRL_ELED_EN_FIELD, ledCtrlReg);
 	config->ledConfig.externalLedPolarity = MAX25405_GET_FIELD(MAX25405_LED_CTRL_ELED_POL_FIELD, ledCtrlReg);
+	config->ledConfig.columnGainMode = MAX25405_ColumnGainModeSelection_Configuration;
 
-	config->columnGainConfig.columnGainMode = MAX25405_ColumnGainModeSelection_Configuration;
 	for (int i = 0; i < (MAX25405_COLUMNS >> 1); i++) {
-		config->columnGainConfig.columnGain[i * 2] = MAX25405_GET_FIELD(MAX25405_COL_GAIN_CFG_CGAIN1_FIELD, colGainRegs[i]);
-		config->columnGainConfig.columnGain[i * 2 + 1] = MAX25405_GET_FIELD(MAX25405_COL_GAIN_CFG_CGAIN2_FIELD, colGainRegs[i]);
+		config->columnGain[i * 2] = MAX25405_GET_FIELD(MAX25405_COL_GAIN_CFG_CGAIN1_FIELD, colGainRegs[i]);
+		config->columnGain[i * 2 + 1] = MAX25405_GET_FIELD(MAX25405_COL_GAIN_CFG_CGAIN2_FIELD, colGainRegs[i]);
 	}
 
 	return MAX25405_Status_Ok;

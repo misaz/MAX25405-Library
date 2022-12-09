@@ -342,7 +342,6 @@ typedef struct {
 		uint8_t enableCoarseAmbientLightCompensation;
 		MAX25405_AfeAlcIsel afeAlcIsel;
 		MAX25405_AfePgaGain afePgaGain;
-		MAX25405_ExternalLedPolarity externalLedPolarity;
 		MAX25405_AfePolarizationMode afePolarization;
 		MAX25405_AfeCapacitance afeCapacitance;
 		MAX25405_AfeReturnToZero afeReturnToZero;
@@ -350,14 +349,13 @@ typedef struct {
 
 	struct {
 		MAX25405_LedDrive ledDrive;
+		MAX25405_ExternalLedPolarity externalLedPolarity;
 		uint8_t enableDriveCurrentOutput;
 		uint8_t enableDrivePwmOutput;
+		MAX25405_ColumnGainModeSelection columnGainMode;
 	} ledConfig;
 
-	struct {
-		MAX25405_ColumnGainModeSelection columnGainMode;
-		MAX25405_ColumnGain columnGain[MAX25405_COLUMNS];
-	} columnGainConfig;
+	MAX25405_ColumnGain columnGain[MAX25405_COLUMNS];
 
 } MAX25405_Configuration;
 
