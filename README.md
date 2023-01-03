@@ -29,7 +29,7 @@ Originally I created this Library as part of [Element14 Experimenting with Gestu
 ## Functions
 Library contains following functions (you can find this listing in MAX25405.h file):
 
-```
+```c
 MAX25405_Status MAX25405_InitI2C(MAX25405_Device* dev, MAX25405_I2CAddress address);
 MAX25405_Status MAX25405_InitSPI(MAX25405_Device* dev, uint8_t chipSelectPortNumber);
 MAX25405_Status MAX25405_Deinit(MAX25405_Device* dev);
@@ -58,47 +58,47 @@ Library is designed as platform independent and you can port it to whatever plat
 
 ## Example
 
-```
+```c
 #include "MAX25405.h"
 
 int main() {
-    MAX25405_Status mStatus;
-    MAX25405_Device max25405dev;
+	MAX25405_Status mStatus;
+	MAX25405_Device max25405dev;
 
-    // select MAX25405 SPI bus: set SEL pin to LOW
-    // Place GPIO configuration routeine and output low setting here
+	// select MAX25405 SPI bus: set SEL pin to LOW
+	// Place GPIO configuration routeine and output low setting here
 
-    MAX25405_InitSPI(&max25405dev, 0);
-    MAX25405_Reset(&max25405dev);
+	MAX25405_InitSPI(&max25405dev, 0);
+	MAX25405_Reset(&max25405dev);
 
-    // deley 10ms here
+	// deley 10ms here
 
-    MAX25405_Configuration config;
-    MAX25405_GetDefaultConfiguration(&config);
-    config.mainConfig.modeOfOperation = MAX25405_ModeOfOperation_TrackingMode;
-    config.ledConfig.ledDrive = MAX25405_LedDrive_PWM_16_16;
-    config.ledConfig.enableDrivePwmOutput = 1;
-    config.ledConfig.columnGainMode = MAX25405_ColumnGainModeSelection_Internal;
-    config.mainConfig.enableEndOfConversionInterrupt = 1;
-    config.sequencingConfig.endOfConversionDelay = MAX25405_EndOfConversionDelay_3_12ms;
-    config.sequencingConfig.integrationTime = MAX25405_IntegrationTime_25us;
-    config.sequencingConfig.numberOfCoherentDoubleSamples = MAX25405_NumberOfCoherentDoubleSamples_8;
+	MAX25405_Configuration config;
+	MAX25405_GetDefaultConfiguration(&config);
+	config.mainConfig.modeOfOperation = MAX25405_ModeOfOperation_TrackingMode;
+	config.ledConfig.ledDrive = MAX25405_LedDrive_PWM_16_16;
+	config.ledConfig.enableDrivePwmOutput = 1;
+	config.ledConfig.columnGainMode = MAX25405_ColumnGainModeSelection_Internal;
+	config.mainConfig.enableEndOfConversionInterrupt = 1;
+	config.sequencingConfig.endOfConversionDelay = MAX25405_EndOfConversionDelay_3_12ms;
+	config.sequencingConfig.integrationTime = MAX25405_IntegrationTime_25us;
+	config.sequencingConfig.numberOfCoherentDoubleSamples = MAX25405_NumberOfCoherentDoubleSamples_8;
 
-    MAX25405_SetConfiguration(&max25405dev, &config);
+	MAX25405_SetConfiguration(&max25405dev, &config);
 
-    while (1) {
-        MAX25405_Interrupt interrupt = 0;
-        MAX25405_GetPendingInterrupts(&max25405dev, &interrupt);
+	while (1) {
+		MAX25405_Interrupt interrupt = 0;
+		MAX25405_GetPendingInterrupts(&max25405dev, &interrupt);
 
-        if (interrupt & MAX25405_Interrupt_EndOfConversion) {
-        	int16_t data[60];
+		if (interrupt & MAX25405_Interrupt_EndOfConversion) {
+			int16_t data[60];
 
-            MAX25405_GetAllPixelData(&max25405dev, data);
+			MAX25405_GetAllPixelData(&max25405dev, data);
 
-            // process pixel data here
-        }
+			// process pixel data here
+		}
 
-    }
+	}
 }
 ```
 
