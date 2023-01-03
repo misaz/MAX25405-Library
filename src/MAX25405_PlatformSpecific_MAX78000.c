@@ -118,6 +118,26 @@ MAX25405_Status MAX25405_PlatformSpecific_I2C_Read(MAX25405_Device* dev, uint8_t
     return MAX25405_Status_Ok;
 }
 
+static mxc_gpio_regs_t* MAX25405_PlatformSpecific_SPI_GetSsPort(uint8_t addr) {
+	if (addr == 0) {
+		return MXC_GPIO0;
+	} else if (addr == 1) {
+		return MXC_GPIO0;
+	} else {
+		return NULL;
+	}
+}
+
+static uint32_t MAX25405_PlatformSpecific_SPI_GetSsPinMask(uint8_t addr) {
+	if (addr == 0) {
+		return MXC_GPIO_PIN_9;
+	} else if (addr == 1) {
+		return MXC_GPIO_PIN_8;
+	} else {
+		return 0;
+	}
+}
+
 MAX25405_Status MAX25405_PlatformSpecific_SPI_Init(MAX25405_Device* dev) {
     int status;
 
@@ -141,14 +161,17 @@ MAX25405_Status MAX25405_PlatformSpecific_SPI_Init(MAX25405_Device* dev) {
         return MAX25405_Status_BusError;
     }
 
+    mxc_gpio_regs_t* ssPort = MAX25405_PlatformSpecific_SPI_GetSsPort(dev->address);
+    uint32_t ssMask = MAX25405_PlatformSpecific_SPI_GetSsPinMask(dev->address);
+
     mxc_gpio_cfg_t ssCfg;
-    ssCfg.port = MAX25405_SS_GPIO;
-    ssCfg.mask = MAX25405_SS_GPIO_PIN;
+    ssCfg.port = ssPort;
+    ssCfg.mask = ssMask;
     ssCfg.func = MXC_GPIO_FUNC_OUT;
     ssCfg.pad = MXC_GPIO_PAD_NONE;
     ssCfg.vssel = MXC_GPIO_VSSEL_VDDIOH;
 
-    MXC_GPIO_OutSet(MAX25405_SS_GPIO, MAX25405_SS_GPIO_PIN);
+    MXC_GPIO_OutSet(ssPort, ssMask);
 
     status = MXC_GPIO_Config(&ssCfg);
     if (status) {
@@ -166,9 +189,12 @@ MAX25405_Status MAX25405_PlatformSpecific_SPI_Deinit(MAX25405_Device* dev) {
         return MAX25405_Status_BusError;
     }
 
+    mxc_gpio_regs_t* ssPort = MAX25405_PlatformSpecific_SPI_GetSsPort(dev->address);
+    uint32_t ssMask = MAX25405_PlatformSpecific_SPI_GetSsPinMask(dev->address);
+
     mxc_gpio_cfg_t ssCfg;
-    ssCfg.port = MAX25405_SS_GPIO;
-    ssCfg.mask = MAX25405_SS_GPIO_PIN;
+    ssCfg.port = ssPort;
+    ssCfg.mask = ssMask;
     ssCfg.func = MXC_GPIO_FUNC_IN;
     ssCfg.pad = MXC_GPIO_PAD_NONE;
     ssCfg.vssel = MXC_GPIO_VSSEL_VDDIO;
@@ -232,14 +258,17 @@ MAX25405_Status MAX25405_PlatformSpecific_SPI_Write(MAX25405_Device* dev, uint8_
     transaction.txCnt = 0;
     transaction.rxCnt = 0;
 
-    MXC_GPIO_OutClr(MAX25405_SS_GPIO, MAX25405_SS_GPIO_PIN);
+    mxc_gpio_regs_t* ssPort = MAX25405_PlatformSpecific_SPI_GetSsPort(dev->address);
+    uint32_t ssMask = MAX25405_PlatformSpecific_SPI_GetSsPinMask(dev->address);
+
+    MXC_GPIO_OutClr(ssPort, ssMask);
 
     status = MXC_SPI_MasterTransaction(&transaction);
     if (status) {
         return MAX25405_Status_BusError;
     }
 
-    MXC_GPIO_OutSet(MAX25405_SS_GPIO, MAX25405_SS_GPIO_PIN);
+    MXC_GPIO_OutSet(ssPort, ssMask);
 
     return MAX25405_Status_Ok;
 }
@@ -290,7 +319,10 @@ MAX25405_Status MAX25405_PlatformSpecific_SPI_Read(MAX25405_Device* dev, uint8_t
     transaction.txCnt = 0;
     transaction.rxCnt = 0;
 
-    MXC_GPIO_OutClr(MAX25405_SS_GPIO, MAX25405_SS_GPIO_PIN);
+    mxc_gpio_regs_t* ssPort = MAX25405_PlatformSpecific_SPI_GetSsPort(dev->address);
+    uint32_t ssMask = MAX25405_PlatformSpecific_SPI_GetSsPinMask(dev->address);
+
+    MXC_GPIO_OutClr(ssPort, ssMask);
 
     MXC_SPI_MasterTransaction(&transaction);
     if (status) {
@@ -310,7 +342,7 @@ MAX25405_Status MAX25405_PlatformSpecific_SPI_Read(MAX25405_Device* dev, uint8_t
         return MAX25405_Status_BusError;
     }
 
-    MXC_GPIO_OutSet(MAX25405_SS_GPIO, MAX25405_SS_GPIO_PIN);
+    MXC_GPIO_OutSet(ssPort, ssMask);
 
     return MAX25405_Status_Ok;
 }

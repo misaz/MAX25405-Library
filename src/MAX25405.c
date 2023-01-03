@@ -52,7 +52,7 @@ MAX25405_Status MAX25405_InitSPI(MAX25405_Device* dev, uint8_t chipSelectPortNum
 	}
 
 	dev->useSpi = 1;
-	dev->address = 0;
+	dev->address = chipSelectPortNumber;
 
 	status = MAX25405_PlatformSpecific_SPI_Init(dev);
 	if (status) {
